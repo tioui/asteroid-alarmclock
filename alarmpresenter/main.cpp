@@ -19,11 +19,37 @@
 #include <QGuiApplication>
 #include <QScreen>
 #include <MDeclarativeCache>
+#include <QFileInfo>
+#include <QTranslator>
+
+#include "process.h"
+
+static QString applicationPath()
+{
+    QString argv0 = QCoreApplication::arguments()[0];
+
+    if (argv0.startsWith("/")) {
+        // First, try argv[0] if it's an absolute path (needed for booster)
+        return argv0;
+    } else {
+        // If that doesn't give an absolute path, use /proc-based detection
+        return QCoreApplication::applicationFilePath();
+    }
+}
+
+QString appName()
+    {
+        QFileInfo exe = QFileInfo(applicationPath());
+        return exe.fileName();
+    }
 
 Q_DECL_EXPORT int main(int argc, char *argv[])
 {
+    qmlRegisterType<Process>("Process", 1, 0, "Process");
     QScopedPointer<QGuiApplication> app(MDeclarativeCache::qApplication(argc, argv));
-
+    QTranslator* translator = new QTranslator();
+    int retour = translator->load(QLocale(), appName(), ".", "/usr/share/translations", ".qm");
+    app->installTranslator(translator);
     QScopedPointer<QQuickView> view(MDeclarativeCache::qQuickView());
     view->setSource(QUrl("qrc:/main.qml"));
     view->setTitle("Alarm Presenter");
