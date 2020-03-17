@@ -7,10 +7,24 @@ import org.asteroid.controls 1.0
 import Process 1.0
 Item {
 
-    function snooze(){
-        if(alarmDialog !== undefined && alarmDialog !== null){
-            alarmDialog.dismiss()
+    function dismissAlarm(){
+        for(var i = 0; alarmModel.count > i; i++) {
+            if (alarmModel.get(i).alarmTime === (+twoDigits(alarmDialog.hour)+":"+twoDigits(alarmDialog.minute))) {
+                if (alarmModel.get(i).alarmName === alarmDialog.title) {
+                    alarmModel.get(i).alarmEnabled = false;
+                }
+            }
         }
+        feedback.stop()
+        if(alarmDialog !== undefined && alarmDialog !== null)
+            alarmDialog.dismiss()
+        alarmTimeField.text = ""
+        alarmHandler.dialogOnScreen = false
+        window.close()
+    }
+
+    function snoozeAlarm(){
+        dismissAlarm()
     }
 
     StatusPage {
@@ -47,5 +61,19 @@ Item {
         }
     }
 
+
+    DBusInterface {
+        bus: DBus.SystemBus
+        service: 'com.nokia.mce'
+        path: '/com/nokia/mce/signal'
+        iface: 'com.nokia.mce.signal'
+        signalsEnabled: true
+
+        function alarm_ui_feedback_ind(event) {
+            if (event === "powerkey") {
+                dismissAlarm()
+            }
+        }
+    }
 
 }

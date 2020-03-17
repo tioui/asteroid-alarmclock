@@ -48,7 +48,7 @@ Q_DECL_EXPORT int main(int argc, char *argv[])
     qmlRegisterType<Process>("Process", 1, 0, "Process");
     QScopedPointer<QGuiApplication> app(MDeclarativeCache::qApplication(argc, argv));
     QTranslator* translator = new QTranslator();
-    int retour = translator->load(QLocale(), appName(), ".", "/usr/share/translations", ".qm");
+    translator->load(QLocale(), appName(), ".", "/usr/share/translations", ".qm");
     app->installTranslator(translator);
     QScopedPointer<QQuickView> view(MDeclarativeCache::qQuickView());
     view->setSource(QUrl("qrc:/main.qml"));

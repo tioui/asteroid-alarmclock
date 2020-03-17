@@ -22,7 +22,6 @@ import Nemo.DBus 2.0
 import Nemo.Configuration 1.0
 import Nemo.Ngf 1.0
 import org.asteroid.controls 1.0
-import Process 1.0
 
 Application {
     id: app
@@ -39,37 +38,28 @@ Application {
         else      return x;
     }
 
-
-    Process {
-        id: process
-    }
-
     AlarmsModel  { id: alarmModel }
     AlarmHandler {
         id: alarmHandler
         onError: console.log("asteroid-alarmpresenter: error in AlarmHandler: " + message);
         onActiveDialogsChanged: {
-
-            if (activeDialogs.length > 0) {
-                if (activeDialogs[0].type === Alarm.Clock || activeDialogs[0].type === Alarm.Countdown){
-                    alarmDialog = activeDialogs[0]
-                    dialogOnScreen = true
-                }
-                if (alarmDialog.type === Alarm.Countdown){
-                    loader.source = "countdownalarm.qml"
-                } else {
-                    loader.source = "clockalarm.qml"
-                }
+            if (activeDialogs[0].type === Alarm.Clock || activeDialogs[0].type === Alarm.Countdown){
+                alarmDialog = activeDialogs[0]
+                dialogOnScreen = true
+            }
+            if (alarmDialog.type === Alarm.Countdown){
+                loader.source = "countdownalarm.qml"
+            } else {
+                loader.source = "clockalarm.qml"
             }
         }
     }
+
 
     Loader{
             id:loader;
             anchors.fill: parent;
         }
-
-
 
     NonGraphicalFeedback {
         id: feedback
@@ -91,41 +81,15 @@ Application {
         interval: 30000
         onTriggered: {
             feedback.stop()
-
+            if(alarmDialog !== undefined && alarmDialog !== null)
+                alarmDialog.snooze()
             alarmTimeField.text = ""
             alarmHandler.dialogOnScreen = false
             window.close()
         }
     }
 
-    DBusInterface {
-        bus: DBus.SystemBus
-        service: 'com.nokia.mce'
-        path: '/com/nokia/mce/signal'
-        iface: 'com.nokia.mce.signal'
-        signalsEnabled: true
-
-        function alarm_ui_feedback_ind(event) {
-            if (event === "powerkey") {
-                for(var i = 0; alarmModel.count > i; i++) {
-                    if (alarmModel.get(i).alarmTime === (+twoDigits(alarmDialog.hour)+":"+twoDigits(alarmDialog.minute))) {
-                        if (alarmModel.get(i).alarmName === alarmDialog.title) {
-                            alarmModel.get(i).alarmEnabled = false;
-                        }
-                    }
-                }
-                feedback.stop()
-                if(alarmDialog !== undefined && alarmDialog !== null)
-                    alarmDialog.dismiss()
-                alarmTimeField.text = ""
-                alarmHandler.dialogOnScreen = false
-                window.close()
-            }
-        }
-    }
-
     Component.onCompleted: {
-        loader.source = "countdownalarm.qml"
         mceRequest.call("req_display_state_on", undefined)
         feedback.play()
         autoSnoozeTimer.start()
