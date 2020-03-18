@@ -43,14 +43,16 @@ Application {
         id: alarmHandler
         onError: console.log("asteroid-alarmpresenter: error in AlarmHandler: " + message);
         onActiveDialogsChanged: {
-            if (activeDialogs[0].type === Alarm.Clock || activeDialogs[0].type === Alarm.Countdown){
-                alarmDialog = activeDialogs[0]
-                dialogOnScreen = true
-            }
-            if (alarmDialog.type === Alarm.Countdown){
-                loader.source = "countdownalarm.qml"
-            } else {
-                loader.source = "clockalarm.qml"
+            if (activeDialogs.length > 0){
+                if (activeDialogs[0].type === Alarm.Clock || activeDialogs[0].type === Alarm.Countdown){
+                    alarmDialog = activeDialogs[0]
+                    dialogOnScreen = true
+                }
+                if (alarmDialog.type === Alarm.Countdown){
+                    loader.source = "countdownalarm.qml"
+                } else {
+                    loader.source = "clockalarm.qml"
+                }
             }
         }
     }
